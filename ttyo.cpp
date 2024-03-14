@@ -1,0 +1,176 @@
+#include <curses.h>
+#include <vector>
+
+using std::vector;
+
+constexpr int UP = 65;
+constexpr int DOWN = 66;
+constexpr int RIGHT = 67;
+constexpr int LEFT = 68;
+
+constexpr char EMPTYGRID = '*';
+constexpr char SETPUYO = 'D';
+constexpr char ACTIVEPUYO = 'P';
+
+struct Vec2
+{
+	int x;
+	int y;
+
+	Vec2 (int X, int Y)
+	{
+		x = X;
+		y = Y;
+	}
+};
+
+struct Node
+{
+	int x;
+	int y;
+	char Body;
+	Vec2 rotations[4] = { Vec2(0, -1), Vec2(1, 0), Vec2(0, 1), Vec2(-1, 0) };
+	int currentRotation;
+
+	Node(int X, int Y, int body)
+	{
+		x = X;
+		y = Y;
+		Body = body;
+		currentRotation = 0;
+	}
+
+	void CW()
+	{
+		currentRotation++;
+		currentRotation = currentRotation % 4;
+	}
+
+	void CCW()
+	{
+		currentRotation--;
+		if (currentRotation == -1)
+			currentRotation = 3;
+	}
+
+	void Draw()
+	{
+		move(y, x);
+		printw("%c", Body);
+		move(y + rotations[currentRotation].y, x + rotations[currentRotation].x);
+		printw("%c", 'O');
+	}
+};
+
+class Grid
+{
+public:
+	vector<char> s;
+	int width;
+	int height;
+
+	Grid(int Width, int Height)
+	{
+		width = Width;
+		height = Height;
+		for (int i = 0; i < Width * Height; i++)
+			s.push_back(EMPTYGRID);
+	}
+
+	char GetChar(int x, int y)
+	{
+		if (x < 0 || y < 0 || x >= width || y >= height)
+			return ' ';
+		return s[x * width + y];
+	}
+
+	void SetChar(int x, int y, char c)
+	{
+		if (x < 0 || y < 0 || x >= width || y >= height)
+			return;
+		s[x * width + y] = c;
+	}
+
+	bool IsEmpty(int x, int y)
+	{
+		return GetChar(x, y) == EMPTYGRID;
+	}
+
+	void SetActive(Node n)
+	{
+		SetChar(n.x, n.y, ACTIVEPUYO);
+		SetChar(n.x + n.rotations[n.currentRotation].x, n.y + n.rotations[n.currentRotation].y, ACTIVEPUYO);
+	}
+
+	void Draw(int X, int Y)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			for (int y = 0; y < height; y++)
+			{
+				move(Y + y, X + x);
+				printw("%c", GetChar(x, y));
+			}
+		}
+	}
+};
+
+int main()
+{
+	Grid grid(10,15);
+	Node puyo(35,0,'X');
+	
+	// Variables
+	int ch;
+	bool quit = false;
+	int i = 0;
+
+	// Initiate the screen
+	initscr();
+
+	// Configuration
+	noecho();				// Don't echo input to the screen
+	curs_set(0);			// Hide the cursor
+	nodelay(stdscr, TRUE);	// Make input nonblocking
+
+	while (!quit)
+	{
+		// If there is input, put it on screen
+		if ((ch = getch()) != ERR)
+		{
+			clear();
+			move(1, 1);
+			if (ch == UP)
+				puyo.CW();
+			else if (ch == DOWN)
+			{
+				puyo.y++;
+				if (puyo.y > curscr->_maxy)
+					puyo.y = 0;
+			}
+			else if (ch == RIGHT)
+				puyo.x++;
+			else if (ch == LEFT)
+				puyo.x--;
+		}
+
+		// Only drop the puyo every 10000 frames
+		if (i % 10000 == 0)
+		{
+			clear();
+			move(3,1);
+			puyo.y++;
+			if (puyo.y > curscr->_maxy)
+				puyo.y = 0;
+		}
+		grid.Draw(30,20);
+		puyo.Draw();
+		refresh();
+		i++;
+	}
+
+	// Reset the terminal situation
+	endwin();
+
+	return 0;
+}
