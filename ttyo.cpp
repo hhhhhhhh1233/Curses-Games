@@ -1,5 +1,6 @@
 #include <curses.h>
 #include <vector>
+#include <unistd.h>
 
 using std::vector;
 
@@ -11,6 +12,8 @@ constexpr int LEFT = 68;
 constexpr char EMPTYGRID = '*';
 constexpr char SETPUYO = 'D';
 constexpr char ACTIVEPUYO = 'P';
+
+constexpr int FRAMESTOSLEEP = 10000;
 
 struct Vec2
 {
@@ -87,21 +90,21 @@ public:
 
 	char GetChar(int x, int y)
 	{
-		if (x < 0 || y < 0 || x >= width || y >= height)
+		if (x < 0 || y < 0 || y > width || x > height)
 			return ' ';
 		return s[x * width + y];
 	}
 
 	void SetChar(int x, int y, char c)
 	{
-		if (x < 0 || y < 0 || x >= width || y >= height)
+		if (x < 0 || y < 0 || y > width || x > height)
 			return;
 		s[x * width + y] = c;
 	}
 
 	bool IsEmpty(int x, int y)
 	{
-		return GetChar(x, y) == EMPTYGRID;
+		return GetChar(y, x) == EMPTYGRID;
 	}
 
 	void SetActive(Node n)
@@ -110,14 +113,20 @@ public:
 		SetChar(n.x + n.rotations[n.currentRotation].x, n.y + n.rotations[n.currentRotation].y, ACTIVEPUYO);
 	}
 
+	void SetOccupied(Node n)
+	{
+		SetChar(n.y, n.x, SETPUYO);
+		SetChar(n.y + n.rotations[n.currentRotation].y, n.x + n.rotations[n.currentRotation].x, SETPUYO);
+	}
+
 	void Draw(int X, int Y)
 	{
 		for (int x = 0; x < width; x++)
 		{
 			for (int y = 0; y < height; y++)
 			{
-				move(Y + y, X + x);
-				printw("%c", GetChar(x, y));
+				move(y + Y, x + X);
+				printw("%c", GetChar(y, x));
 			}
 		}
 	}
@@ -129,6 +138,7 @@ public:
 	Vec2 GridPosition;
 	Grid grid;
 	Node ActivePuyo;
+	vector<Node> SetPuyos;
 
 	Field(Vec2 gridPos, int width, int height) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Node(width/2, 0, 'X')) {}
 
@@ -140,7 +150,9 @@ public:
 			ActivePuyo.y++;
 		else
 		{
-
+			SetPuyos.push_back(ActivePuyo);
+			grid.SetOccupied(ActivePuyo);
+			ActivePuyo = Node(grid.width/2, 0, 'X');
 		}
 	}
 
@@ -164,6 +176,8 @@ public:
 	{
 		grid.Draw(GridPosition.x, GridPosition.y);
 		ActivePuyo.Draw(GridPosition.x, GridPosition.y);
+		for (auto puyo : SetPuyos)
+			puyo.Draw(GridPosition.x, GridPosition.y);
 	}
 
 };
@@ -204,7 +218,7 @@ int main()
 		}
 
 		// Only drop the puyo every 10000 frames
-		if (i % 10000 == 0)
+		if (i % FRAMESTOSLEEP == 0)
 		{
 			clear();
 			f.PuyoFall();
