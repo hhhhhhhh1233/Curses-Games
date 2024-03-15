@@ -60,6 +60,14 @@ struct Node
 		move(y + rotations[currentRotation].y, x + rotations[currentRotation].x);
 		printw("%c", 'O');
 	}
+
+	void Draw(int X, int Y)
+	{
+		move(y + Y, x + X);
+		printw("%c", Body);
+		move(y + Y + rotations[currentRotation].y, x + X + rotations[currentRotation].x);
+		printw("%c", 'O');
+	}
 };
 
 class Grid
@@ -115,10 +123,55 @@ public:
 	}
 };
 
+class Field
+{
+public:
+	Vec2 GridPosition;
+	Grid grid;
+	Node ActivePuyo;
+
+	Field(Vec2 gridPos, int width, int height) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Node(width/2, 0, 'X')) {}
+
+	void PuyoFall()
+	{
+		int attachedX = ActivePuyo.x + ActivePuyo.rotations[ActivePuyo.currentRotation].x;
+		int attachedY = ActivePuyo.y + ActivePuyo.rotations[ActivePuyo.currentRotation].y;
+		if (grid.IsEmpty(ActivePuyo.x, ActivePuyo.y + 1) && grid.IsEmpty(attachedX, attachedY + 1))
+			ActivePuyo.y++;
+		else
+		{
+
+		}
+	}
+
+	void PuyoMoveLeft()
+	{
+		int attachedX = ActivePuyo.x + ActivePuyo.rotations[ActivePuyo.currentRotation].x;
+		int attachedY = ActivePuyo.y + ActivePuyo.rotations[ActivePuyo.currentRotation].y;
+		if (grid.IsEmpty(ActivePuyo.x - 1, ActivePuyo.y) && grid.IsEmpty(attachedX - 1, attachedY))
+			ActivePuyo.x--;
+	}
+	
+	void PuyoMoveRight()
+	{
+		int attachedX = ActivePuyo.x + ActivePuyo.rotations[ActivePuyo.currentRotation].x;
+		int attachedY = ActivePuyo.y + ActivePuyo.rotations[ActivePuyo.currentRotation].y;
+		if (grid.IsEmpty(ActivePuyo.x + 1, ActivePuyo.y) && grid.IsEmpty(attachedX + 1, attachedY))
+			ActivePuyo.x++;
+	}
+	
+	void Draw()
+	{
+		grid.Draw(GridPosition.x, GridPosition.y);
+		ActivePuyo.Draw(GridPosition.x, GridPosition.y);
+	}
+
+};
+
+
 int main()
 {
-	Grid grid(10,15);
-	Node puyo(35,0,'X');
+	Field f(Vec2(30,20), 10, 15);
 	
 	// Variables
 	int ch;
@@ -141,30 +194,23 @@ int main()
 			clear();
 			move(1, 1);
 			if (ch == UP)
-				puyo.CW();
+				f.ActivePuyo.CW();
 			else if (ch == DOWN)
-			{
-				puyo.y++;
-				if (puyo.y > curscr->_maxy)
-					puyo.y = 0;
-			}
+				f.PuyoFall();
 			else if (ch == RIGHT)
-				puyo.x++;
+				f.PuyoMoveRight();
 			else if (ch == LEFT)
-				puyo.x--;
+				f.PuyoMoveLeft();
 		}
 
 		// Only drop the puyo every 10000 frames
 		if (i % 10000 == 0)
 		{
 			clear();
+			f.PuyoFall();
 			move(3,1);
-			puyo.y++;
-			if (puyo.y > curscr->_maxy)
-				puyo.y = 0;
 		}
-		grid.Draw(30,20);
-		puyo.Draw();
+		f.Draw();
 		refresh();
 		i++;
 	}
