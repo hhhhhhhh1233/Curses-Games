@@ -13,7 +13,7 @@ constexpr int DOWN = 66;
 constexpr int RIGHT = 67;
 constexpr int LEFT = 68;
 constexpr int SPACE = 32;
-constexpr int QUIT_KEY = 27;
+constexpr int QUIT_KEY = 113;
 
 constexpr char EMPTYGRID = '*';
 constexpr char SETPUYO = 'D';
