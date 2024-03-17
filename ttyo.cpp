@@ -213,8 +213,9 @@ public:
 		}
 	}
 
-	void ClearPuyos()
+	bool ClearPuyos()
 	{
+		bool Cleared = false;
 		for (int x = 0; x < width; x++)
 		{
 			for (int y = 0; y < height; y++)
@@ -246,10 +247,12 @@ public:
 						{
 							SetChar(puyo.y, puyo.x, EMPTYGRID);
 						}
+						Cleared = true;
 					}
 				}
 			}
 		}
+		return Cleared;
 	}
 
 	void DropAllPuyos()
@@ -297,7 +300,6 @@ public:
 				ActivePuyo.Pivot.Position.y++;
 				Draw();
 				refresh();
-				sleep(1);
 			}
 			grid.SetChar(ActivePuyo.Pivot.Position.y, ActivePuyo.Pivot.Position.x, ctoch[ActivePuyo.Pivot.Type]);
 			while (grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y + 1))
@@ -305,11 +307,14 @@ public:
 				ActivePuyo.Tagalong.Position.y++;
 				Draw();
 				refresh();
-				sleep(1);
 			}
 			grid.SetChar(ActivePuyo.Tagalong.Position.y, ActivePuyo.Tagalong.Position.x, ctoch[ActivePuyo.Tagalong.Type]);
-			grid.ClearPuyos();
-			grid.DropAllPuyos();
+			while (grid.ClearPuyos())
+			{
+				grid.DropAllPuyos();
+				Draw();
+				refresh();
+			}
 			ActivePuyo = Puyo(grid.width/2, 0, 'X');
 		}
 	}
@@ -351,9 +356,44 @@ public:
 	void Draw()
 	{
 		grid.Draw(GridPosition.x, GridPosition.y);
+		DrawActiveHint();
 		//for (auto puyo : SetPuyos)
 		//	puyo.Draw(GridPosition.x, GridPosition.y);
 		ActivePuyo.Draw(GridPosition.x, GridPosition.y);
+	}
+
+	void DrawActiveHint()
+	{
+		int PivotOffset = 0;
+		int TagalongOffset = 0;
+
+		do
+		{
+			PivotOffset++;
+		}
+		while (ActivePuyo.Pivot.Position.y + PivotOffset < grid.height && grid.GetChar(ActivePuyo.Pivot.Position.y + PivotOffset, ActivePuyo.Pivot.Position.x) == EMPTYGRID);
+		
+		do
+		{
+			TagalongOffset++;
+		}
+		while (ActivePuyo.Tagalong.Position.y + TagalongOffset < grid.height && grid.GetChar(ActivePuyo.Tagalong.Position.y + TagalongOffset, ActivePuyo.Tagalong.Position.x) == EMPTYGRID);
+
+		if (ActivePuyo.Pivot.Position.y > ActivePuyo.Tagalong.Position.y)
+			TagalongOffset--;
+
+		if (ActivePuyo.Pivot.Position.y < ActivePuyo.Tagalong.Position.y)
+			PivotOffset--;
+
+		attron(COLOR_PAIR(((int)ActivePuyo.Pivot.Type)+2));
+		move(GridPosition.y + ActivePuyo.Pivot.Position.y + PivotOffset - 1, GridPosition.x + ActivePuyo.Pivot.Position.x);
+		printw("*");
+		attroff(COLOR_PAIR(((int)ActivePuyo.Pivot.Type)+2));
+
+		attron(COLOR_PAIR(((int)ActivePuyo.Tagalong.Type)+2));
+		move(GridPosition.y + ActivePuyo.Tagalong.Position.y + TagalongOffset - 1, GridPosition.x + ActivePuyo.Tagalong.Position.x);
+		printw("*");
+		attroff(COLOR_PAIR(((int)ActivePuyo.Tagalong.Type)+2));
 	}
 
 };
@@ -395,8 +435,8 @@ int main()
 
 	while (!quit)
 	{
-		move(50,50);
-		printw("%d, %d", f.ActivePuyo.Pivot.Position.x, f.ActivePuyo.Pivot.Position.y); 
+		//move(50,50);
+		//printw("%d, %d", f.ActivePuyo.Pivot.Position.x, f.ActivePuyo.Pivot.Position.y); 
 		if ((ch = getch()) != ERR)
 		{
 			clear();
