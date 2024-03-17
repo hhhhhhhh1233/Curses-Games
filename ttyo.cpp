@@ -217,6 +217,15 @@ public:
 			ActivePuyo.MoveRight();
 	}
 
+	void PuyoRotateClockwise()
+	{
+		ActivePuyo.CW();
+		if (!grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y))
+		{
+			ActivePuyo.CW();
+		}
+	}
+
 	void PuyoDrop()
 	{
 		while (grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y + 1) && grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y + 1))
@@ -273,7 +282,7 @@ int main()
 		{
 			clear();
 			if (ch == UP)
-				f.ActivePuyo.CW();
+				f.PuyoRotateClockwise();
 			else if (ch == DOWN)
 				f.PuyoFall();
 			else if (ch == RIGHT)
