@@ -1,8 +1,10 @@
 #include <curses.h>
 #include <iostream>
+#include <map>
 #include <vector>
 #include <unistd.h>
 
+using std::map;
 using std::vector;
 
 constexpr int UP = 65;
@@ -22,6 +24,7 @@ constexpr int REDPUYOFIELD_PAIR = 2;
 constexpr int BLUEPUYOFIELD_PAIR = 3;
 
 enum Color { red, blue, yellow, green, purple };
+map<Color, char> ctoch = {{Color::red, 'R'}, {Color::blue, 'B'}, {Color::yellow, 'Y'}, {Color::green, 'G'}, {Color::purple, 'P'}};
 
 struct Vec2
 {
@@ -46,6 +49,12 @@ public:
 		Position = pos;
 		Type = type;
 	}
+
+	PuyoNode(Vec2 pos)
+	{
+		Position = pos;
+		Type = static_cast<Color>(rand()%5);
+	}
 };
 
 struct Puyo
@@ -58,6 +67,12 @@ struct Puyo
 	int currentRotation;
 
 	Puyo(int X, int Y, Color t, int body) : Pivot(PuyoNode(Vec2(), t)), Tagalong(PuyoNode(Vec2(), t))
+	{
+		Body = body;
+		currentRotation = 0;
+	}
+
+	Puyo(int X, int Y, int body) : Pivot(PuyoNode(Vec2())), Tagalong(PuyoNode(Vec2()))
 	{
 		Body = body;
 		currentRotation = 0;
@@ -105,11 +120,11 @@ struct Puyo
 	{
 		//attron(COLOR_PAIR(REDPUYOFIELD_PAIR));
 		move(Pivot.Position.y + Y, Pivot.Position.x + X);
-		printw("%c", Body);
+		printw("%c", ctoch[Pivot.Type]);
 		//attroff(COLOR_PAIR(REDPUYOFIELD_PAIR));
 		//attron(COLOR_PAIR(BLUEPUYOFIELD_PAIR));
 		move(Tagalong.Position.y + Y, Tagalong.Position.x + X);
-		printw("%c", 'O');
+		printw("%c", ctoch[Tagalong.Type]);
 		//attroff(COLOR_PAIR(BLUEPUYOFIELD_PAIR));
 	}
 };
@@ -183,7 +198,7 @@ public:
 	Puyo ActivePuyo;
 	vector<Puyo> SetPuyos;
 
-	Field(Vec2 gridPos, int width, int height) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Puyo(width/2, 0, Color::red, 'X')) {}
+	Field(Vec2 gridPos, int width, int height) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Puyo(width/2, 0, 'X')) {}
 
 	void PuyoFall()
 	{
@@ -192,12 +207,23 @@ public:
 		else
 		{
 			SetPuyos.push_back(ActivePuyo);
-			grid.SetOccupied(ActivePuyo);
-//			move(50,50);
-			//printw("%d", grid.width/2);
-			//refresh();
-			//sleep(2);
-			ActivePuyo = Puyo(grid.width/2, 0, Color::red, 'X');
+			while (grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y + 1) && ActivePuyo.Pivot.Position.y + 1 != ActivePuyo.Tagalong.Position.y)
+			{
+				ActivePuyo.Pivot.Position.y++;
+				Draw();
+				refresh();
+				sleep(1);
+			}
+			grid.SetChar(ActivePuyo.Pivot.Position.y, ActivePuyo.Pivot.Position.x, ctoch[ActivePuyo.Pivot.Type]);
+			while (grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y + 1))
+			{
+				ActivePuyo.Tagalong.Position.y++;
+				Draw();
+				refresh();
+				sleep(1);
+			}
+			grid.SetChar(ActivePuyo.Tagalong.Position.y, ActivePuyo.Tagalong.Position.x, ctoch[ActivePuyo.Tagalong.Type]);
+			ActivePuyo = Puyo(grid.width/2, 0, 'X');
 		}
 	}
 
@@ -248,6 +274,7 @@ public:
 
 int main()
 {
+	srand(time(NULL));
 	Field f(Vec2(30,20), 10, 15);
 	
 	// Variables
