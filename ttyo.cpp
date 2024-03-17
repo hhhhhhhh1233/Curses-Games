@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <curses.h>
 #include <iostream>
 #include <map>
@@ -35,6 +36,11 @@ struct Vec2
 	{
 		x = X;
 		y = Y;
+	}
+
+	bool operator==(Vec2 rhs) const
+	{
+		return x == rhs.x && y == rhs.y;
 	}
 };
 
@@ -188,6 +194,56 @@ public:
 			}
 		}
 	}
+
+	void ClearPuyos()
+	{
+		for (int x = 0; x < width; x++)
+		{
+			for (int y = 0; y < height; y++)
+			{
+				if (GetChar(y, x) != EMPTYGRID)
+				{
+					vector<Vec2> PotentialClearable;
+					vector<Vec2> Candidates = {{x+1,y}, {x-1,y}, {x,y+1}, {x,y-1}};
+					PotentialClearable.push_back(Vec2(x, y));
+					while (Candidates.size() != 0)
+					{
+						if (GetChar(Candidates[0].y, Candidates[0].x) == GetChar(y,x))
+						{
+							PotentialClearable.push_back(Candidates[0]);
+							vector<Vec2> Neighbors = {{Candidates[0].x+1, Candidates[0].y}, {Candidates[0].x-1, Candidates[0].y}, {Candidates[0].x, Candidates[0].y+1}, {Candidates[0].x, Candidates[0].y-1}};
+							for (auto vec : Neighbors)
+							{
+								if (GetChar(vec.y, vec.x) == GetChar(y, x) && std::find(PotentialClearable.begin(), PotentialClearable.end(), vec) == PotentialClearable.end())
+								{
+									Candidates.push_back(vec);
+								}
+							}
+						}
+						Candidates.erase(Candidates.begin());
+					}
+					if (PotentialClearable.size() >= 4)
+					{
+						for (auto puyo : PotentialClearable)
+						{
+							SetChar(puyo.y, puyo.x, EMPTYGRID);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	void DropAllPuyos()
+	{
+		for (int x = width - 1; x >= 0; x--)
+		{
+			for (int y = height; y >= 0; y--)
+			{
+
+			}
+		}
+	}
 };
 
 class Field
@@ -223,6 +279,8 @@ public:
 				sleep(1);
 			}
 			grid.SetChar(ActivePuyo.Tagalong.Position.y, ActivePuyo.Tagalong.Position.x, ctoch[ActivePuyo.Tagalong.Type]);
+			grid.ClearPuyos();
+			grid.DropAllPuyos();
 			ActivePuyo = Puyo(grid.width/2, 0, 'X');
 		}
 	}
