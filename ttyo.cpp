@@ -13,6 +13,7 @@ constexpr int DOWN = 66;
 constexpr int RIGHT = 67;
 constexpr int LEFT = 68;
 constexpr int SPACE = 32;
+constexpr int QUIT_KEY = 27;
 
 constexpr char EMPTYGRID = '*';
 constexpr char SETPUYO = 'D';
@@ -80,12 +81,14 @@ struct Puyo
 	{
 		Body = body;
 		currentRotation = 0;
+		UpdateTagalong();
 	}
 
-	Puyo(int X, int Y, int body) : Pivot(PuyoNode(Vec2())), Tagalong(PuyoNode(Vec2()))
+	Puyo(int X, int Y, int body) : Pivot(PuyoNode(Vec2(X, Y))), Tagalong(PuyoNode(Vec2()))
 	{
 		Body = body;
 		currentRotation = 0;
+		UpdateTagalong();
 	}
 
 	void CW()
@@ -285,8 +288,10 @@ public:
 	Grid grid;
 	Puyo ActivePuyo;
 	vector<Puyo> SetPuyos;
+	int Score;
+	bool GameRunning;
 
-	Field(Vec2 gridPos, int width, int height) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Puyo(width/2, 0, 'X')) {}
+	Field(Vec2 gridPos, int width, int height) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Puyo((width-1)/2, 1, 'X')), Score(0), GameRunning(true) {}
 
 	void PuyoFall()
 	{
@@ -294,6 +299,11 @@ public:
 			ActivePuyo.MoveDown();
 		else
 		{
+			if (!grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y))
+			{
+				GameOver();
+				return;
+			}
 			SetPuyos.push_back(ActivePuyo);
 			while (grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y + 1) && ActivePuyo.Pivot.Position.y + 1 != ActivePuyo.Tagalong.Position.y)
 			{
@@ -309,13 +319,16 @@ public:
 				refresh();
 			}
 			grid.SetChar(ActivePuyo.Tagalong.Position.y, ActivePuyo.Tagalong.Position.x, ctoch[ActivePuyo.Tagalong.Type]);
+			int Chain = 1;
 			while (grid.ClearPuyos())
 			{
+				Score += 100 * Chain;
 				grid.DropAllPuyos();
 				Draw();
 				refresh();
+				Chain++;
 			}
-			ActivePuyo = Puyo(grid.width/2, 0, 'X');
+			ActivePuyo = Puyo((grid.width-1)/2, 1, 'X');
 		}
 	}
 
@@ -327,10 +340,6 @@ public:
 	
 	void PuyoMoveRight()
 	{
-//		move(50,50);
-//		printw("%c", grid.GetChar(ActivePuyo.Pivot.Position.x + 1, ActivePuyo.Pivot.Position.y));
-//		refresh();
-//		sleep(1);
 		if (grid.IsEmpty(ActivePuyo.Pivot.Position.x + 1, ActivePuyo.Pivot.Position.y) && grid.IsEmpty(ActivePuyo.Tagalong.Position.x + 1, ActivePuyo.Tagalong.Position.y))
 			ActivePuyo.MoveRight();
 	}
@@ -342,6 +351,11 @@ public:
 		{
 			ActivePuyo.CW();
 		}
+	}
+
+	void GameOver()
+	{
+		GameRunning = false;
 	}
 
 	void PuyoDrop()
@@ -357,8 +371,6 @@ public:
 	{
 		grid.Draw(GridPosition.x, GridPosition.y);
 		DrawActiveHint();
-		//for (auto puyo : SetPuyos)
-		//	puyo.Draw(GridPosition.x, GridPosition.y);
 		ActivePuyo.Draw(GridPosition.x, GridPosition.y);
 	}
 
@@ -402,7 +414,7 @@ public:
 int main()
 {
 	srand(time(NULL));
-	Field f(Vec2(30,20), 10, 15);
+	Field f(Vec2(2,2), 10, 15);
 	
 	// Variables
 	int ch;
@@ -433,9 +445,12 @@ int main()
 	init_pair(PURPLEFIELD_PAIR, COLOR_MAGENTA, COLOR_BLACK);
 	init_pair(OUTLINEFIELD_PAIR, COLOR_WHITE, COLOR_WHITE);
 
-	while (!quit)
+	while (f.GameRunning && !quit)
 	{
-		//move(50,50);
+		move(2,15);
+		printw("Score: ");
+		move(3,15);
+		printw("%d", f.Score);
 		//printw("%d, %d", f.ActivePuyo.Pivot.Position.x, f.ActivePuyo.Pivot.Position.y); 
 		if ((ch = getch()) != ERR)
 		{
@@ -450,6 +465,8 @@ int main()
 				f.PuyoMoveLeft();
 			else if (ch == SPACE)
 				f.PuyoDrop();
+			else if (ch == QUIT_KEY)
+				quit = true;
 		}
 
 		// Only drop the puyo every 10000 frames
@@ -461,6 +478,22 @@ int main()
 		f.Draw();
 		refresh();
 		i++;
+	}
+
+	while(!quit)
+	{
+		move(10,10);
+		printw("GAME OVER");
+		move(2,15);
+		printw("Score: ");
+		move(3,15);
+		printw("%d", f.Score);
+		if ((ch = getch()) != ERR)
+		{
+			if (ch == QUIT_KEY)
+				quit = true;
+		}
+		refresh();
 	}
 
 	// Reset the terminal situation
