@@ -236,11 +236,22 @@ public:
 
 	void DropAllPuyos()
 	{
+		vector<int> ClearColumns;
 		for (int x = width - 1; x >= 0; x--)
 		{
 			for (int y = height; y >= 0; y--)
 			{
-
+				if (GetChar(y, x) == EMPTYGRID)
+				{
+					int i = 1;
+					while (y - i >= 0 && GetChar(y-i, x) == EMPTYGRID)
+						i++;
+					if (y-i>=0)
+					{
+						SetChar(y, x, GetChar(y-i, x));
+						SetChar(y-i, x, EMPTYGRID);
+					}
+				}
 			}
 		}
 	}
