@@ -21,8 +21,12 @@ constexpr char ACTIVEPUYO = 'P';
 constexpr int FRAMESTOSLEEP = 10000;
 
 constexpr int EMPTYFIELD_PAIR = 1;
-constexpr int REDPUYOFIELD_PAIR = 2;
-constexpr int BLUEPUYOFIELD_PAIR = 3;
+constexpr int REDFIELD_PAIR = 2;
+constexpr int BLUEFIELD_PAIR = 3;
+constexpr int YELLOWFIELD_PAIR = 4;
+constexpr int GREENFIELD_PAIR = 5;
+constexpr int PURPLEFIELD_PAIR = 6;
+constexpr int OUTLINEFIELD_PAIR = 7;
 
 enum Color { red, blue, yellow, green, purple };
 map<Color, char> ctoch = {{Color::red, 'R'}, {Color::blue, 'B'}, {Color::yellow, 'Y'}, {Color::green, 'G'}, {Color::purple, 'P'}};
@@ -124,13 +128,16 @@ struct Puyo
 
 	void Draw(int X, int Y)
 	{
-		//attron(COLOR_PAIR(REDPUYOFIELD_PAIR));
+		attron(COLOR_PAIR(((int)Pivot.Type)+2));
 		move(Pivot.Position.y + Y, Pivot.Position.x + X);
 		printw("%c", ctoch[Pivot.Type]);
 		//attroff(COLOR_PAIR(REDPUYOFIELD_PAIR));
+		attroff(COLOR_PAIR(((int)Pivot.Type)+2));
+		attron(COLOR_PAIR(((int)Tagalong.Type)+2));
 		//attron(COLOR_PAIR(BLUEPUYOFIELD_PAIR));
 		move(Tagalong.Position.y + Y, Tagalong.Position.x + X);
 		printw("%c", ctoch[Tagalong.Type]);
+		attroff(COLOR_PAIR(((int)Tagalong.Type)+2));
 		//attroff(COLOR_PAIR(BLUEPUYOFIELD_PAIR));
 	}
 };
@@ -183,14 +190,25 @@ public:
 
 	void Draw(int X, int Y)
 	{
+		for (int x = -1; x < width+1; x++)
+		{
+			for (int y = -1; y < height+1; y++)
+			{
+				attron(COLOR_PAIR(OUTLINEFIELD_PAIR));
+				move(y + Y, x + X);
+				printw(" ");
+				attroff(COLOR_PAIR(OUTLINEFIELD_PAIR));
+			}
+		}
+		map<char, int> ColorPair = {{EMPTYGRID, 1}, {'R', 2}, {'B', 3}, {'Y', 4}, {'G', 5}, {'P', 6}};
 		for (int x = 0; x < width; x++)
 		{
 			for (int y = 0; y < height; y++)
 			{
-				//attron(COLOR_PAIR(EMPTYFIELD_PAIR));
+				attron(COLOR_PAIR(ColorPair[GetChar(y,x)]));
 				move(y + Y, x + X);
 				printw("%c", GetChar(y, x));
-				//attroff(COLOR_PAIR(EMPTYFIELD_PAIR));
+				attroff(COLOR_PAIR(ColorPair[GetChar(y,x)]));
 			}
 		}
 	}
@@ -365,11 +383,16 @@ int main()
 	noecho();				// Don't echo input to the screen
 	curs_set(0);			// Hide the cursor
 	nodelay(stdscr, TRUE);	// Make input nonblocking
-	//start_color();			// Allows us to have colors in our game 
+	start_color();			// Allows us to have colors in our game 
 
-	init_pair(EMPTYFIELD_PAIR, COLOR_WHITE, COLOR_WHITE);
-	init_pair(REDPUYOFIELD_PAIR, COLOR_RED, COLOR_RED);
-	init_pair(BLUEPUYOFIELD_PAIR, COLOR_BLUE, COLOR_BLUE);
+	init_pair(EMPTYFIELD_PAIR, COLOR_BLACK, COLOR_BLACK);
+	init_pair(REDFIELD_PAIR, COLOR_RED, COLOR_BLACK);
+	init_pair(BLUEFIELD_PAIR, COLOR_BLUE, COLOR_BLACK);
+	init_pair(YELLOWFIELD_PAIR, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(GREENFIELD_PAIR, COLOR_GREEN, COLOR_BLACK);
+	init_pair(PURPLEFIELD_PAIR, COLOR_MAGENTA, COLOR_BLACK);
+	init_pair(OUTLINEFIELD_PAIR, COLOR_WHITE, COLOR_WHITE);
+
 	while (!quit)
 	{
 		move(50,50);
