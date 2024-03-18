@@ -8,6 +8,7 @@ A puyo-like that runs in the terminal. Right now it's fairly bare bones.
 To run it copy the two lines below into the terminal and it should start.
 ```
 git clone git@github.com:hhhhhhhh1233/Curses-Games.git
+cd Curses-Games
 make run
 ```
 It'll create a file called ```ttyo``` that you can run anytime.
