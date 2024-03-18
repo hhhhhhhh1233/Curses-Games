@@ -549,8 +549,15 @@ int main()
 	init_pair(OUTLINEFIELD_PAIR, COLOR_WHITE, COLOR_WHITE);
 	init_pair(DEATHFIELD_PAIR, COLOR_RED, COLOR_WHITE);
 
+	auto StartTime = std::chrono::system_clock::now();
+	int playTiming = 0;
+	int aiTiming = 0;
+
 	while (f.GameRunning && !quit)
 	{
+		auto tim = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - StartTime).count();
+		move(20,0);
+		printw("%d\n%d", (int)tim % 1000, (int)tim / 1000);
 		//printw("%d, %d", f.ActivePuyo.Pivot.Position.x, f.ActivePuyo.Pivot.Position.y); 
 		if ((ch = getch()) != ERR)
 		{
@@ -560,7 +567,7 @@ int main()
 				f.PuyoRotateCounterClockwise();
 			else if (ch == X_KEY)
 				f.PuyoRotateClockwise();
-			else if (ch == DOWN)
+			else if (ch == DOWN && f.ActivePuyo.Pivot.Position.y > 2)
 			{
 				f.PuyoFall();
 				f.Score += 3;
@@ -575,8 +582,9 @@ int main()
 				quit = true;
 		}
 
-		if (i % 6000 == 0)
+		if (aiTiming == tim/1000)
 		{
+			aiTiming++;
 			int choice = rand()%4;
 			if (choice == 0)
 				AIField.PuyoRotateClockwise();
@@ -589,8 +597,9 @@ int main()
 		}
 
 		// Only drop the puyo every few thousand frames
-		if (i % FRAMESTOSLEEP == 0)
+		if (playTiming == tim/1000)
 		{
+			playTiming++;
 			if (ch != DOWN)
 				f.PuyoFall();
 			AIField.PuyoFall();
