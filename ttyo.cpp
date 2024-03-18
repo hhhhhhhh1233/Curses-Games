@@ -429,6 +429,10 @@ public:
 		grid.Draw(GridPosition.x, GridPosition.y);
 		DrawActiveHint();
 		DrawXs();
+		move(GridPosition.y + 0,GridPosition.x + grid.width + 2);
+		printw("Score: ");
+		move(GridPosition.y + 1,GridPosition.x + grid.width + 2);
+		printw("%d", Score);
 		move(GridPosition.y + 3, GridPosition.x + grid.width + 2);
 		printw("Next:");
 		NextPuyo.Draw(GridPosition.x + grid.width, GridPosition.y + 4);
@@ -493,6 +497,8 @@ int main()
 
 	Field f(Vec2(2,2), 6, 12);
 	
+	Field AIField(Vec2(20,2), 6, 12);
+	
 	// Variables
 	int ch;
 	bool quit = false;
@@ -524,10 +530,6 @@ int main()
 
 	while (f.GameRunning && !quit)
 	{
-		move(2,10);
-		printw("Score: ");
-		move(3,10);
-		printw("%d", f.Score);
 		//printw("%d, %d", f.ActivePuyo.Pivot.Position.x, f.ActivePuyo.Pivot.Position.y); 
 		if ((ch = getch()) != ERR)
 		{
@@ -552,12 +554,28 @@ int main()
 				quit = true;
 		}
 
-		// Only drop the puyo every 10000 frames
+		if (i % 6000 == 0)
+		{
+			int choice = rand()%4;
+			if (choice == 0)
+				AIField.PuyoRotateClockwise();
+			else if (choice == 1)
+				AIField.PuyoRotateCounterClockwise();
+			else if (choice == 2)
+				AIField.PuyoMoveRight();
+			else if (choice == 3)
+				AIField.PuyoMoveLeft();
+
+		}
+
+		// Only drop the puyo every few thousand frames
 		if (i % FRAMESTOSLEEP == 0)
 		{
 			f.PuyoFall();
+			AIField.PuyoFall();
 		}
 		f.Draw();
+		AIField.Draw();
 		refresh();
 		i++;
 	}
