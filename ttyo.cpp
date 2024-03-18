@@ -303,6 +303,8 @@ public:
 
 	void PuyoFall()
 	{
+		if (!GameRunning)
+			return;
 		if (grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y + 1) && grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y + 1))
 			ActivePuyo.MoveDown();
 		else
@@ -334,12 +336,12 @@ public:
 				DrawBare();
 				refresh();
 				if (CanPause)
-					std::this_thread::sleep_for(std::chrono::milliseconds(400));
+					std::this_thread::sleep_for(std::chrono::milliseconds(200));
 				grid.DropAllPuyos();
 				DrawBare();
 				refresh();
 				if (CanPause)
-					std::this_thread::sleep_for(std::chrono::milliseconds(400));
+					std::this_thread::sleep_for(std::chrono::milliseconds(200));
 				Chain++;
 			}
 			ActivePuyo = NextPuyo;
@@ -349,18 +351,24 @@ public:
 
 	void PuyoMoveLeft()
 	{
+		if (!GameRunning)
+			return;
 		if (grid.IsEmpty(ActivePuyo.Pivot.Position.x - 1, ActivePuyo.Pivot.Position.y) && grid.IsEmpty(ActivePuyo.Tagalong.Position.x - 1, ActivePuyo.Tagalong.Position.y))
 			ActivePuyo.MoveLeft();
 	}
 	
 	void PuyoMoveRight()
 	{
+		if (!GameRunning)
+			return;
 		if (grid.IsEmpty(ActivePuyo.Pivot.Position.x + 1, ActivePuyo.Pivot.Position.y) && grid.IsEmpty(ActivePuyo.Tagalong.Position.x + 1, ActivePuyo.Tagalong.Position.y))
 			ActivePuyo.MoveRight();
 	}
 
 	void PuyoRotateClockwise()
 	{
+		if (!GameRunning)
+			return;
 		ActivePuyo.CW();
 		if (!grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y))
 		{
@@ -387,6 +395,8 @@ public:
 
 	void PuyoRotateCounterClockwise()
 	{
+		if (!GameRunning)
+			return;
 		ActivePuyo.CCW();
 		if (!grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y))
 		{
@@ -432,7 +442,6 @@ public:
 	{
 		grid.Draw(GridPosition.x, GridPosition.y);
 		DrawActiveHint();
-		DrawXs();
 		move(GridPosition.y + 0,GridPosition.x + grid.width + 2);
 		printw("Score: ");
 		move(GridPosition.y + 1,GridPosition.x + grid.width + 2);
@@ -441,6 +450,12 @@ public:
 		printw("Next:");
 		NextPuyo.Draw(GridPosition.x + grid.width, GridPosition.y + 4);
 		ActivePuyo.Draw(GridPosition.x, GridPosition.y);
+		DrawXs();
+		if (!GameRunning)
+		{
+			move(GridPosition.y + grid.height/2, GridPosition.x + grid.width/2 - 4);
+			printw("GAME OVER");
+		}
 	}
 
 	void DrawBare()
@@ -588,8 +603,6 @@ int main()
 
 	while(!quit)
 	{
-		move(10,10);
-		printw("GAME OVER");
 		if ((ch = getch()) != ERR)
 		{
 			if (ch == QUIT_KEY)
