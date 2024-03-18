@@ -222,9 +222,9 @@ public:
 		}
 	}
 
-	bool ClearPuyos()
+	int ClearPuyos()
 	{
-		bool Cleared = false;
+		int Cleared = 0;
 		for (int x = 0; x < width; x++)
 		{
 			for (int y = 0; y < height; y++)
@@ -256,7 +256,7 @@ public:
 						{
 							SetChar(puyo.y, puyo.x, EMPTYGRID);
 						}
-						Cleared = true;
+						Cleared = PotentialClearable.size();
 					}
 				}
 			}
@@ -330,9 +330,9 @@ public:
 			}
 			grid.SetChar(ActivePuyo.Tagalong.Position.y, ActivePuyo.Tagalong.Position.x, ctoch[ActivePuyo.Tagalong.Type]);
 			int Chain = 1;
-			while (grid.ClearPuyos())
+			while (int x = grid.ClearPuyos())
 			{
-				Score += 100 * Chain;
+				Score += (x - 3) * 100 * Chain;
 				DrawBare();
 				refresh();
 				if (CanPause)
