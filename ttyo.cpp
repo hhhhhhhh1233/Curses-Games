@@ -14,12 +14,14 @@ constexpr int RIGHT = 67;
 constexpr int LEFT = 68;
 constexpr int SPACE = 32;
 constexpr int QUIT_KEY = 113;
+constexpr int Z_KEY = 122;
+constexpr int X_KEY = 120;
 
 constexpr char EMPTYGRID = '*';
 constexpr char SETPUYO = 'D';
 constexpr char ACTIVEPUYO = 'P';
 
-constexpr int FRAMESTOSLEEP = 10000;
+constexpr int FRAMESTOSLEEP = 5000;
 
 constexpr int EMPTYFIELD_PAIR = 1;
 constexpr int REDFIELD_PAIR = 2;
@@ -349,7 +351,50 @@ public:
 		ActivePuyo.CW();
 		if (!grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y))
 		{
-			ActivePuyo.CW();
+			if (ActivePuyo.currentRotation == 1)
+			{
+				ActivePuyo.MoveLeft();
+				if (!grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y))
+				{
+					ActivePuyo.MoveRight();
+					ActivePuyo.CW();
+				}
+			}
+			if (ActivePuyo.currentRotation == 3)
+			{
+				ActivePuyo.MoveRight();
+				if (!grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y))
+				{
+					ActivePuyo.MoveLeft();
+					ActivePuyo.CCW();
+				}
+			}
+		}
+	}
+
+	void PuyoRotateCounterClockwise()
+	{
+		ActivePuyo.CCW();
+		if (!grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y))
+		{
+			if (ActivePuyo.currentRotation == 1)
+			{
+				ActivePuyo.MoveLeft();
+				if (!grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y))
+				{
+					ActivePuyo.MoveRight();
+					ActivePuyo.CW();
+				}
+			}
+			if (ActivePuyo.currentRotation == 3)
+			{
+				ActivePuyo.MoveRight();
+				if (!grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y))
+				{
+					ActivePuyo.MoveLeft();
+					ActivePuyo.CCW();
+				}
+			}
 		}
 	}
 
@@ -456,6 +501,10 @@ int main()
 		{
 			clear();
 			if (ch == UP)
+				f.PuyoRotateClockwise();
+			else if (ch == Z_KEY)
+				f.PuyoRotateCounterClockwise();
+			else if (ch == X_KEY)
 				f.PuyoRotateClockwise();
 			else if (ch == DOWN)
 				f.PuyoFall();
