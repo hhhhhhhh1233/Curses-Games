@@ -1,7 +1,10 @@
 #include <algorithm>
+#include <chrono>
+#include <cstdlib>
 #include <curses.h>
 #include <iostream>
 #include <map>
+#include <thread>
 #include <vector>
 #include <unistd.h>
 
@@ -289,11 +292,12 @@ public:
 	Vec2 GridPosition;
 	Grid grid;
 	Puyo ActivePuyo;
+	Puyo NextPuyo;
 	vector<Puyo> SetPuyos;
 	int Score;
 	bool GameRunning;
 
-	Field(Vec2 gridPos, int width, int height) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Puyo((width-1)/2, 1, 'X')), Score(0), GameRunning(true) {}
+	Field(Vec2 gridPos, int width, int height) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Puyo((width-1)/2, 1, 'X')), NextPuyo(Puyo((width-1)/2, 1, 'X')), Score(0), GameRunning(true) {}
 
 	void PuyoFall()
 	{
@@ -325,12 +329,17 @@ public:
 			while (grid.ClearPuyos())
 			{
 				Score += 100 * Chain;
-				grid.DropAllPuyos();
-				Draw();
+				DrawBare();
 				refresh();
+				std::this_thread::sleep_for(std::chrono::milliseconds(400));
+				grid.DropAllPuyos();
+				DrawBare();
+				refresh();
+				std::this_thread::sleep_for(std::chrono::milliseconds(400));
 				Chain++;
 			}
-			ActivePuyo = Puyo((grid.width-1)/2, 1, 'X');
+			ActivePuyo = NextPuyo;
+			NextPuyo = Puyo((grid.width-1)/2, 1, 'X');
 		}
 	}
 
@@ -405,18 +414,30 @@ public:
 
 	void PuyoDrop()
 	{
+		int PotentialScore = 0;
 		while (grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y + 1) && grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y + 1))
 		{
 			PuyoFall();
+			PotentialScore += 5;
 		}
 		PuyoFall();
+		Score += PotentialScore;
 	}
 	
 	void Draw()
 	{
 		grid.Draw(GridPosition.x, GridPosition.y);
 		DrawActiveHint();
+		DrawXs();
+		move(GridPosition.y + 3, GridPosition.x + grid.width + 2);
+		printw("Next:");
+		NextPuyo.Draw(GridPosition.x + grid.width, GridPosition.y + 4);
 		ActivePuyo.Draw(GridPosition.x, GridPosition.y);
+	}
+
+	void DrawBare()
+	{
+		grid.Draw(GridPosition.x, GridPosition.y);
 	}
 
 	void DrawActiveHint()
@@ -453,13 +474,24 @@ public:
 		attroff(COLOR_PAIR(((int)ActivePuyo.Tagalong.Type)+2));
 	}
 
+	void DrawXs()
+	{
+		attron(COLOR_PAIR(REDFIELD_PAIR));
+		for (int i = 0; i < grid.width; i++)
+			mvaddch(GridPosition.y, GridPosition.x + i, 'X');
+		attroff(COLOR_PAIR(REDFIELD_PAIR));
+	}
+
 };
 
 
 int main()
 {
 	srand(time(NULL));
-	Field f(Vec2(2,2), 10, 15);
+
+	system("resize -s 50 50");
+
+	Field f(Vec2(2,2), 6, 12);
 	
 	// Variables
 	int ch;
@@ -492,14 +524,13 @@ int main()
 
 	while (f.GameRunning && !quit)
 	{
-		move(2,15);
+		move(2,10);
 		printw("Score: ");
-		move(3,15);
+		move(3,10);
 		printw("%d", f.Score);
 		//printw("%d, %d", f.ActivePuyo.Pivot.Position.x, f.ActivePuyo.Pivot.Position.y); 
 		if ((ch = getch()) != ERR)
 		{
-			clear();
 			if (ch == UP)
 				f.PuyoRotateClockwise();
 			else if (ch == Z_KEY)
@@ -507,7 +538,10 @@ int main()
 			else if (ch == X_KEY)
 				f.PuyoRotateClockwise();
 			else if (ch == DOWN)
+			{
 				f.PuyoFall();
+				f.Score += 3;
+			}
 			else if (ch == RIGHT)
 				f.PuyoMoveRight();
 			else if (ch == LEFT)
@@ -521,7 +555,6 @@ int main()
 		// Only drop the puyo every 10000 frames
 		if (i % FRAMESTOSLEEP == 0)
 		{
-			clear();
 			f.PuyoFall();
 		}
 		f.Draw();
@@ -533,10 +566,6 @@ int main()
 	{
 		move(10,10);
 		printw("GAME OVER");
-		move(2,15);
-		printw("Score: ");
-		move(3,15);
-		printw("%d", f.Score);
 		if ((ch = getch()) != ERR)
 		{
 			if (ch == QUIT_KEY)
