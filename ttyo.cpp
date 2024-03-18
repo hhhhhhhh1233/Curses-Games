@@ -33,6 +33,7 @@ constexpr int YELLOWFIELD_PAIR = 4;
 constexpr int GREENFIELD_PAIR = 5;
 constexpr int PURPLEFIELD_PAIR = 6;
 constexpr int OUTLINEFIELD_PAIR = 7;
+constexpr int DEATHFIELD_PAIR = 8;
 
 enum Color { red, blue, yellow, green, purple };
 map<Color, char> ctoch = {{Color::red, 'R'}, {Color::blue, 'B'}, {Color::yellow, 'Y'}, {Color::green, 'G'}, {Color::purple, 'P'}};
@@ -296,8 +297,9 @@ public:
 	vector<Puyo> SetPuyos;
 	int Score;
 	bool GameRunning;
+	bool CanPause;
 
-	Field(Vec2 gridPos, int width, int height) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Puyo((width-1)/2, 1, 'X')), NextPuyo(Puyo((width-1)/2, 1, 'X')), Score(0), GameRunning(true) {}
+	Field(Vec2 gridPos, int width, int height, bool Player = true) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Puyo((width-1)/2, 1, 'X')), NextPuyo(Puyo((width-1)/2, 1, 'X')), Score(0), GameRunning(true), CanPause(Player) {}
 
 	void PuyoFall()
 	{
@@ -331,11 +333,13 @@ public:
 				Score += 100 * Chain;
 				DrawBare();
 				refresh();
-				std::this_thread::sleep_for(std::chrono::milliseconds(400));
+				if (CanPause)
+					std::this_thread::sleep_for(std::chrono::milliseconds(400));
 				grid.DropAllPuyos();
 				DrawBare();
 				refresh();
-				std::this_thread::sleep_for(std::chrono::milliseconds(400));
+				if (CanPause)
+					std::this_thread::sleep_for(std::chrono::milliseconds(400));
 				Chain++;
 			}
 			ActivePuyo = NextPuyo;
@@ -442,6 +446,7 @@ public:
 	void DrawBare()
 	{
 		grid.Draw(GridPosition.x, GridPosition.y);
+		DrawXs();
 	}
 
 	void DrawActiveHint()
@@ -480,10 +485,10 @@ public:
 
 	void DrawXs()
 	{
-		attron(COLOR_PAIR(REDFIELD_PAIR));
+		attron(COLOR_PAIR(DEATHFIELD_PAIR));
 		for (int i = 0; i < grid.width; i++)
-			mvaddch(GridPosition.y, GridPosition.x + i, 'X');
-		attroff(COLOR_PAIR(REDFIELD_PAIR));
+			mvaddch(GridPosition.y-1, GridPosition.x + i, 'X');
+		attroff(COLOR_PAIR(DEATHFIELD_PAIR));
 	}
 
 };
@@ -497,7 +502,7 @@ int main()
 
 	Field f(Vec2(2,2), 6, 12);
 	
-	Field AIField(Vec2(20,2), 6, 12);
+	Field AIField(Vec2(21,2), 6, 12, false);
 	
 	// Variables
 	int ch;
@@ -527,6 +532,7 @@ int main()
 	init_pair(GREENFIELD_PAIR, COLOR_GREEN, COLOR_BLACK);
 	init_pair(PURPLEFIELD_PAIR, COLOR_MAGENTA, COLOR_BLACK);
 	init_pair(OUTLINEFIELD_PAIR, COLOR_WHITE, COLOR_WHITE);
+	init_pair(DEATHFIELD_PAIR, COLOR_RED, COLOR_WHITE);
 
 	while (f.GameRunning && !quit)
 	{
@@ -565,13 +571,13 @@ int main()
 				AIField.PuyoMoveRight();
 			else if (choice == 3)
 				AIField.PuyoMoveLeft();
-
 		}
 
 		// Only drop the puyo every few thousand frames
 		if (i % FRAMESTOSLEEP == 0)
 		{
-			f.PuyoFall();
+			if (ch != DOWN)
+				f.PuyoFall();
 			AIField.PuyoFall();
 		}
 		f.Draw();
