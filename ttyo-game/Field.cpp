@@ -1,11 +1,12 @@
 #include "Field.h"
+#include <curses.h>
 
 Field::Field(Vec2 gridPos, int width, int height, int cellWidth, int cellHeight, bool Player) : GridPosition(gridPos), grid(Grid(width, height, cellWidth, cellHeight)), ActivePuyo(Puyo((width-1)/2, 1, 'X')), NextPuyo(Puyo((width-1)/2, 1, 'X')), Score(0), GameRunning(true), CanPause(Player) {}
 
-void Field::PuyoFall()
+bool Field::PuyoFall()
 {
 	if (!GameRunning)
-		return;
+		return false;
 	if (grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y + 1) && grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y + 1))
 		ActivePuyo.MoveDown();
 	else
@@ -13,14 +14,14 @@ void Field::PuyoFall()
 		if (!grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y))
 		{
 			GameOver();
-			return;
+			return false;
 		}
 		SetPuyos.push_back(ActivePuyo);
 		while (grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y + 1) && ActivePuyo.Pivot.Position.y + 1 != ActivePuyo.Tagalong.Position.y)
 		{
 			ActivePuyo.Pivot.Position.y++;
 			Draw();
-			refresh();
+			wrefresh(stdscr);
 			if (CanPause)
 				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 		}
@@ -29,7 +30,7 @@ void Field::PuyoFall()
 		{
 			ActivePuyo.Tagalong.Position.y++;
 			Draw();
-			refresh();
+			wrefresh(stdscr);
 			if (CanPause)
 				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 		}
@@ -39,19 +40,21 @@ void Field::PuyoFall()
 		{
 			Score += (x - 3) * 100 * Chain;
 			DrawBare();
-			refresh();
+			wrefresh(stdscr);
 			if (CanPause)
 				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			grid.DropAllPuyos();
 			DrawBare();
-			refresh();
+			wrefresh(stdscr);
 			if (CanPause)
 				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			Chain++;
 		}
 		ActivePuyo = NextPuyo;
 		NextPuyo = Puyo((grid.width-1)/2, 1, 'X');
+		return true;
 	}
+	return false;
 }
 
 void Field::PuyoMoveLeft()
@@ -139,16 +142,20 @@ void Field::GameOver()
 	GameRunning = false;
 }
 
-void Field::PuyoDrop()
+bool Field::PuyoDrop()
 {
 	int PotentialScore = 0;
+	bool c = false;
 	while (grid.IsEmpty(ActivePuyo.Pivot.Position.x, ActivePuyo.Pivot.Position.y + 1) && grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y + 1))
 	{
-		PuyoFall();
+		if (PuyoFall())
+			c = true;
 		PotentialScore += 5;
 	}
-	PuyoFall();
+	//if (PuyoFall())
+	//	c = true;
 	Score += PotentialScore;
+	return c;
 }
 
 void Field::Draw()

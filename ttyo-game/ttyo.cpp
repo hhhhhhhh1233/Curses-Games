@@ -74,7 +74,11 @@ int main()
 				f.PuyoRotateClockwise();
 			else if (ch == DOWN && f.ActivePuyo.Pivot.Position.y > 2)
 			{
-				f.PuyoFall();
+				if(f.PuyoFall())
+				{
+					StartTime = std::chrono::system_clock::now();
+					playTiming = 0;
+				}
 				f.Score += 3;
 			}
 			else if (ch == RIGHT)
@@ -82,7 +86,13 @@ int main()
 			else if (ch == LEFT)
 				f.PuyoMoveLeft();
 			else if (ch == SPACE)
-				f.PuyoDrop();
+			{
+				if (f.PuyoDrop())
+				{
+					StartTime = std::chrono::system_clock::now();
+					playTiming = 0;
+				}
+			}
 			else if (ch == QUIT_KEY)
 				quit = true;
 		}

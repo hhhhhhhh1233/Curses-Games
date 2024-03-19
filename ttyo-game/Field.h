@@ -29,13 +29,13 @@ public:
 	bool CanPause;
 
 	Field(Vec2 gridPos, int width, int height, int cellWidth, int cellHeight, bool Player = true);
-	void PuyoFall();
+	bool PuyoFall();
 	void PuyoMoveLeft();
 	void PuyoMoveRight();
 	void PuyoRotateClockwise();
 	void PuyoRotateCounterClockwise();
 	void GameOver();
-	void PuyoDrop();
+	bool PuyoDrop();
 	void Draw();
 	void DrawBare();
 	void DrawActiveHint();
