@@ -82,6 +82,10 @@ void Field::PuyoRotateClockwise()
 				ActivePuyo.CW();
 			}
 		}
+		if (ActivePuyo.currentRotation == 2)
+		{
+			ActivePuyo.MoveUp();
+		}
 		if (ActivePuyo.currentRotation == 3)
 		{
 			ActivePuyo.MoveRight();
@@ -109,6 +113,10 @@ void Field::PuyoRotateCounterClockwise()
 				ActivePuyo.MoveRight();
 				ActivePuyo.CW();
 			}
+		}
+		if (ActivePuyo.currentRotation == 2)
+		{
+			ActivePuyo.MoveUp();
 		}
 		if (ActivePuyo.currentRotation == 3)
 		{
@@ -143,15 +151,14 @@ void Field::Draw()
 {
 	grid.Draw(GridPosition.x, GridPosition.y);
 	DrawActiveHint();
-	//move(GridPosition.y + 0,GridPosition.x + grid.width + 2);
-	//printw("Score: ");
-	//move(GridPosition.y + 1,GridPosition.x + grid.width + 2);
-	//printw("%d", Score);
-	//move(GridPosition.y + 3, GridPosition.x + grid.width + 2);
-	//printw("Next:");
-	//NextPuyo.Draw(GridPosition.x + grid.width, GridPosition.y + 4);
+	move(GridPosition.y + 0,GridPosition.x + grid.width * grid.cellWidth + 2);
+	printw("Score: ");
+	move(GridPosition.y + 1,GridPosition.x + grid.width * grid.cellWidth + 2);
+	printw("%d", Score);
+	move(GridPosition.y + 3, GridPosition.x + grid.width * grid.cellWidth + 2);
+	printw("Next:");
+	NextPuyo.Draw(GridPosition.x + grid.width * grid.cellWidth - 6, GridPosition.y + 5, grid.cellWidth, grid.cellHeight);
 	ActivePuyo.Draw(GridPosition.x, GridPosition.y, grid.cellWidth, grid.cellHeight);
-	//DrawXs();
 	if (!GameRunning)
 	{
 		move(GridPosition.y + grid.height/2, GridPosition.x + grid.width/2 - 4);
@@ -162,7 +169,6 @@ void Field::Draw()
 void Field::DrawBare()
 {
 	grid.Draw(GridPosition.x, GridPosition.y);
-	//DrawXs();
 }
 
 void Field::DrawActiveHint()

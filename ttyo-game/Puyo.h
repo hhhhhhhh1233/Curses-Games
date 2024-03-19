@@ -20,6 +20,7 @@ public:
 	void CCW();
 	void MoveLeft();
 	void MoveRight();
+	void MoveUp();
 	void MoveDown();
 	void UpdateTagalong();
 	void Draw(int X, int Y, int CellWidth, int CellHeight);

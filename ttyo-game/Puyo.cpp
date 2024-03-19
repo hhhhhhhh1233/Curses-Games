@@ -42,6 +42,12 @@ void Puyo::MoveRight()
 	UpdateTagalong();
 }
 
+void Puyo::MoveUp()
+{
+	Pivot.Position.y--;
+	UpdateTagalong();
+}
+
 void Puyo::MoveDown()
 {
 	Pivot.Position.y++;
