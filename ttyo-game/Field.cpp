@@ -21,6 +21,8 @@ void Field::PuyoFall()
 			ActivePuyo.Pivot.Position.y++;
 			Draw();
 			refresh();
+			if (CanPause)
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 		}
 		grid.SetChar(ActivePuyo.Pivot.Position.y, ActivePuyo.Pivot.Position.x, ctoch[ActivePuyo.Pivot.Type]);
 		while (grid.IsEmpty(ActivePuyo.Tagalong.Position.x, ActivePuyo.Tagalong.Position.y + 1))
@@ -28,6 +30,8 @@ void Field::PuyoFall()
 			ActivePuyo.Tagalong.Position.y++;
 			Draw();
 			refresh();
+			if (CanPause)
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 		}
 		grid.SetChar(ActivePuyo.Tagalong.Position.y, ActivePuyo.Tagalong.Position.x, ctoch[ActivePuyo.Tagalong.Type]);
 		int Chain = 1;

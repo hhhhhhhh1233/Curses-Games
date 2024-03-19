@@ -20,11 +20,9 @@ int main()
 {
 	srand(time(NULL));
 
-	system("resize -s 50 50");
-
 	Field f(Vec2(2,2), 6, 12, 5, 3);
 	
-	//Field AIField(Vec2(21,2), 6, 12, 5, 3, false);
+	Field AIField(Vec2(52,2), 6, 12, 5, 3, false);
 	
 	// Variables
 	int ch;
@@ -58,7 +56,7 @@ int main()
 
 	auto StartTime = std::chrono::system_clock::now();
 	int playTiming = 0;
-	//int aiTiming = 0;
+	int aiTiming = 0;
 
 	while (f.GameRunning && !quit)
 	{
@@ -89,19 +87,19 @@ int main()
 				quit = true;
 		}
 
-		//if (aiTiming == tim/1000)
-		//{
-		//	aiTiming++;
-		//	int choice = rand()%4;
-		//	if (choice == 0)
-		//		AIField.PuyoRotateClockwise();
-		//	else if (choice == 1)
-		//		AIField.PuyoRotateCounterClockwise();
-		//	else if (choice == 2)
-		//		AIField.PuyoMoveRight();
-		//	else if (choice == 3)
-		//		AIField.PuyoMoveLeft();
-		//}
+		if (aiTiming == tim/1000)
+		{
+			aiTiming++;
+			int choice = rand()%4;
+			if (choice == 0)
+				AIField.PuyoRotateClockwise();
+			else if (choice == 1)
+				AIField.PuyoRotateCounterClockwise();
+			else if (choice == 2)
+				AIField.PuyoMoveRight();
+			else if (choice == 3)
+				AIField.PuyoMoveLeft();
+		}
 
 		// Only drop the puyo every few thousand frames
 		if (playTiming == tim/1000)
@@ -109,10 +107,10 @@ int main()
 			playTiming++;
 			if (ch != DOWN)
 				f.PuyoFall();
-			//AIField.PuyoFall();
+			AIField.PuyoFall();
 		}
 		f.Draw();
-		//AIField.Draw();
+		AIField.Draw();
 		refresh();
 		i++;
 	}
