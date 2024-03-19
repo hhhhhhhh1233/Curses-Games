@@ -1,6 +1,6 @@
 #include "Field.h"
 
-Field::Field(Vec2 gridPos, int width, int height, bool Player) : GridPosition(gridPos), grid(Grid(width, height)), ActivePuyo(Puyo((width-1)/2, 1, 'X')), NextPuyo(Puyo((width-1)/2, 1, 'X')), Score(0), GameRunning(true), CanPause(Player) {}
+Field::Field(Vec2 gridPos, int width, int height, int cellWidth, int cellHeight, bool Player) : GridPosition(gridPos), grid(Grid(width, height, cellWidth, cellHeight)), ActivePuyo(Puyo((width-1)/2, 1, 'X')), NextPuyo(Puyo((width-1)/2, 1, 'X')), Score(0), GameRunning(true), CanPause(Player) {}
 
 void Field::PuyoFall()
 {
@@ -143,15 +143,15 @@ void Field::Draw()
 {
 	grid.Draw(GridPosition.x, GridPosition.y);
 	DrawActiveHint();
-	move(GridPosition.y + 0,GridPosition.x + grid.width + 2);
-	printw("Score: ");
-	move(GridPosition.y + 1,GridPosition.x + grid.width + 2);
-	printw("%d", Score);
-	move(GridPosition.y + 3, GridPosition.x + grid.width + 2);
-	printw("Next:");
-	NextPuyo.Draw(GridPosition.x + grid.width, GridPosition.y + 4);
-	ActivePuyo.Draw(GridPosition.x, GridPosition.y);
-	DrawXs();
+	//move(GridPosition.y + 0,GridPosition.x + grid.width + 2);
+	//printw("Score: ");
+	//move(GridPosition.y + 1,GridPosition.x + grid.width + 2);
+	//printw("%d", Score);
+	//move(GridPosition.y + 3, GridPosition.x + grid.width + 2);
+	//printw("Next:");
+	//NextPuyo.Draw(GridPosition.x + grid.width, GridPosition.y + 4);
+	ActivePuyo.Draw(GridPosition.x, GridPosition.y, grid.cellWidth, grid.cellHeight);
+	//DrawXs();
 	if (!GameRunning)
 	{
 		move(GridPosition.y + grid.height/2, GridPosition.x + grid.width/2 - 4);
@@ -162,7 +162,7 @@ void Field::Draw()
 void Field::DrawBare()
 {
 	grid.Draw(GridPosition.x, GridPosition.y);
-	DrawXs();
+	//DrawXs();
 }
 
 void Field::DrawActiveHint()
@@ -189,12 +189,12 @@ void Field::DrawActiveHint()
 		PivotOffset--;
 
 	attron(COLOR_PAIR(((int)ActivePuyo.Pivot.Type)+2));
-	move(GridPosition.y + ActivePuyo.Pivot.Position.y + PivotOffset - 1, GridPosition.x + ActivePuyo.Pivot.Position.x);
+	move(1 + GridPosition.y + (ActivePuyo.Pivot.Position.y + PivotOffset - 1) * grid.cellHeight, 2 + GridPosition.x + ActivePuyo.Pivot.Position.x * grid.cellWidth);
 	printw("*");
 	attroff(COLOR_PAIR(((int)ActivePuyo.Pivot.Type)+2));
 
 	attron(COLOR_PAIR(((int)ActivePuyo.Tagalong.Type)+2));
-	move(GridPosition.y + ActivePuyo.Tagalong.Position.y + TagalongOffset - 1, GridPosition.x + ActivePuyo.Tagalong.Position.x);
+	move(1 + GridPosition.y + (ActivePuyo.Tagalong.Position.y + TagalongOffset - 1) * grid.cellHeight, 2 + GridPosition.x + grid.cellWidth * ActivePuyo.Tagalong.Position.x);
 	printw("*");
 	attroff(COLOR_PAIR(((int)ActivePuyo.Tagalong.Type)+2));
 }

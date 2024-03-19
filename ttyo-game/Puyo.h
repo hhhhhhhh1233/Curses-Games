@@ -22,5 +22,5 @@ public:
 	void MoveRight();
 	void MoveDown();
 	void UpdateTagalong();
-	void Draw(int X, int Y);
+	void Draw(int X, int Y, int CellWidth, int CellHeight);
 };

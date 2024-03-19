@@ -1,10 +1,13 @@
 #include "Grid.h"
 #include "Vec2.h"
+#include <unistd.h>
 
-Grid::Grid(int Width, int Height)
+Grid::Grid(int Width, int Height, int CellWidth, int CellHeight)
 {
 	width = Width;
 	height = Height;
+	cellWidth = CellWidth;
+	cellHeight = CellHeight;
 	for (int i = 0; i < Width * Height; i++)
 		s.push_back(EMPTYGRID);
 }
@@ -28,14 +31,14 @@ bool Grid::IsEmpty(int x, int y)
 	return GetChar(y, x) == EMPTYGRID;
 }
 
-void Grid::Draw(int X, int Y)
+void Grid::Draw(int OffsetX, int OffsetY)
 {
-	for (int x = -1; x < width+1; x++)
+	for (int x = -1; x < (cellWidth * width)+1; x++)
 	{
-		for (int y = -1; y < height+1; y++)
+		for (int y = -1; y < (cellHeight*height)+1; y++)
 		{
 			attron(COLOR_PAIR(OUTLINEFIELD_PAIR));
-			move(y + Y, x + X);
+			move(y + OffsetY, x + OffsetX);
 			printw(" ");
 			attroff(COLOR_PAIR(OUTLINEFIELD_PAIR));
 		}
@@ -45,10 +48,22 @@ void Grid::Draw(int X, int Y)
 	{
 		for (int y = 0; y < height; y++)
 		{
-			attron(COLOR_PAIR(ColorPair[GetChar(y,x)]));
-			move(y + Y, x + X);
-			printw("%c", GetChar(y, x));
-			attroff(COLOR_PAIR(ColorPair[GetChar(y,x)]));
+			for(int cx = 0; cx < cellWidth; cx++)
+			{
+				for (int cy = 0; cy < cellHeight; cy++)
+				{
+					if (cx == 0 && cy == 0 || cx == 4 && cy == 0 || cx == 1 && cy == 1 || cx == 3 && cy == 1)
+						attron(COLOR_PAIR(EMPTYFIELD_PAIR));
+					else
+						attron(COLOR_PAIR(ColorPair[GetChar(y,x)]));
+					move(OffsetY + y * cellHeight + cy, OffsetX + x * cellWidth + cx);
+					printw("%c", GetChar(y, x));
+					if (cx == 0 && cy == 0 || cx == 4 && cy == 0 || cx == 1 && cy == 1 || cx == 3 && cy == 1)
+						attroff(COLOR_PAIR(EMPTYFIELD_PAIR));
+					else
+						attroff(COLOR_PAIR(ColorPair[GetChar(y,x)]));
+				}
+			}
 		}
 	}
 }

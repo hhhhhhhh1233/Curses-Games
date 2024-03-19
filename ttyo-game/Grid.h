@@ -20,8 +20,10 @@ public:
 	vector<char> s;
 	int width;
 	int height;
+	int cellWidth;
+	int cellHeight;
 
-	Grid(int Width, int Height);
+	Grid(int Width, int Height, int CellWidth, int CellHeight);
 	char GetChar(int x, int y);
 	void SetChar(int x, int y, char c);
 	bool IsEmpty(int x, int y);

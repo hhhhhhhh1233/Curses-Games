@@ -28,7 +28,7 @@ public:
 	bool GameRunning;
 	bool CanPause;
 
-	Field(Vec2 gridPos, int width, int height, bool Player = true);
+	Field(Vec2 gridPos, int width, int height, int cellWidth, int cellHeight, bool Player = true);
 	void PuyoFall();
 	void PuyoMoveLeft();
 	void PuyoMoveRight();
