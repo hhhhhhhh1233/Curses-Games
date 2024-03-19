@@ -65,13 +65,13 @@ void Puyo::Draw(int OffsetX, int OffsetY, int CellWidth, int CellHeight)
 	{
 		for (int x = 0; x < 5; x++)
 		{
-			if (x == 0 && y == 0 || x == 4 && y == 0 || x == 1 && y == 1 || x == 3 && y == 1)
+			if ((x == 0 && y == 0) || (x == 4 && y == 0) || (x == 1 && y == 1) || (x == 3 && y == 1))
 				attron(COLOR_PAIR(EMPTYFIELD_PAIR));
 			else
 				attron(COLOR_PAIR(((int)Pivot.Type)+2));
 			move(OffsetY + Pivot.Position.y * CellHeight + y, OffsetX + Pivot.Position.x * CellWidth + x);
 			printw("%c", ctoch[Pivot.Type]);
-			if (x == 0 && y == 0 || x == 4 && y == 0 || x == 1 && y == 1 || x == 3 && y == 1)
+			if ((x == 0 && y == 0) || (x == 4 && y == 0) || (x == 1 && y == 1) || (x == 3 && y == 1))
 				attroff(COLOR_PAIR(EMPTYFIELD_PAIR));
 			else
 				attroff(COLOR_PAIR(((int)Pivot.Type)+2));
@@ -81,13 +81,13 @@ void Puyo::Draw(int OffsetX, int OffsetY, int CellWidth, int CellHeight)
 	{
 		for (int x = 0; x < 5; x++)
 		{
-			if (x == 0 && y == 0 || x == 4 && y == 0 || x == 1 && y == 1 || x == 3 && y == 1)
+			if ((x == 0 && y == 0) || (x == 4 && y == 0) || (x == 1 && y == 1) || (x == 3 && y == 1))
 				attron(COLOR_PAIR(EMPTYFIELD_PAIR));
 			else
 				attron(COLOR_PAIR(((int)Tagalong.Type)+2));
 			move(OffsetY + Tagalong.Position.y * CellHeight + y, OffsetX + Tagalong.Position.x * CellWidth + x);
 			printw("%c", ctoch[Tagalong.Type]);
-			if (x == 0 && y == 0 || x == 4 && y == 0 || x == 1 && y == 1 || x == 3 && y == 1)
+			if ((x == 0 && y == 0) || (x == 4 && y == 0) || (x == 1 && y == 1) || (x == 3 && y == 1))
 				attroff(COLOR_PAIR(EMPTYFIELD_PAIR));
 			else
 				attroff(COLOR_PAIR(((int)Tagalong.Type)+2));

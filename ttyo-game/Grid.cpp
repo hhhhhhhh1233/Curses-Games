@@ -52,13 +52,13 @@ void Grid::Draw(int OffsetX, int OffsetY)
 			{
 				for (int cy = 0; cy < cellHeight; cy++)
 				{
-					if (cx == 0 && cy == 0 || cx == 4 && cy == 0 || cx == 1 && cy == 1 || cx == 3 && cy == 1)
+					if ((cx == 0 && cy == 0) || (cx == 4 && cy == 0) || (cx == 1 && cy == 1) || (cx == 3 && cy == 1))
 						attron(COLOR_PAIR(EMPTYFIELD_PAIR));
 					else
 						attron(COLOR_PAIR(ColorPair[GetChar(y,x)]));
 					move(OffsetY + y * cellHeight + cy, OffsetX + x * cellWidth + cx);
 					printw("%c", GetChar(y, x));
-					if (cx == 0 && cy == 0 || cx == 4 && cy == 0 || cx == 1 && cy == 1 || cx == 3 && cy == 1)
+					if ((cx == 0 && cy == 0) || (cx == 4 && cy == 0) || (cx == 1 && cy == 1) || (cx == 3 && cy == 1))
 						attroff(COLOR_PAIR(EMPTYFIELD_PAIR));
 					else
 						attroff(COLOR_PAIR(ColorPair[GetChar(y,x)]));
